@@ -11,6 +11,9 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+
+    public Text bestScoreText;
+
     public GameObject GameOverText;
     
     private bool m_Started = false;
@@ -24,7 +27,10 @@ public class MainManager : MonoBehaviour
     {
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
-        
+
+        bestScoreText.text = "Best Score: " + Menu.Instance.best_player + ":" + Menu.Instance.best_score;
+
+
         int[] pointCountArray = new [] {1,1,2,2,5,5};
         for (int i = 0; i < LineCount; ++i)
         {
@@ -52,12 +58,18 @@ public class MainManager : MonoBehaviour
                 Ball.transform.SetParent(null);
                 Ball.AddForce(forceDir * 2.0f, ForceMode.VelocityChange);
             }
+
         }
         else if (m_GameOver)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                Menu.Instance.transform.GetChild(0).gameObject.SetActive(true);
+                SceneManager.LoadScene(0);
             }
         }
     }
@@ -66,10 +78,22 @@ public class MainManager : MonoBehaviour
     {
         m_Points += point;
         ScoreText.text = $"Score : {m_Points}";
+
+        if (Menu.Instance.best_score < m_Points)
+        {
+            bestScoreText.text = "Best Score: " + Menu.Instance.playerName + ":" + m_Points;
+
+            Menu.Instance.best_player = Menu.Instance.playerName;
+            Menu.Instance.best_score = m_Points;
+        }
+           
     }
 
     public void GameOver()
     {
+
+        if (Menu.Instance.best_score < m_Points) 
+            Menu.Instance.SaveScore(m_Points,Menu.Instance.playerName);
         m_GameOver = true;
         GameOverText.SetActive(true);
     }
